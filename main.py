@@ -51,7 +51,43 @@ function_schema = {
 }
 
 # ----- API Endpoints -----
-@app.get("/functions")
+@app.get("/functions")        {
+            "name": "reserve_property",
+            "description": "Reserve a property by its ID.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "property_id": {"type": "string"}
+                },
+                "required": ["property_id"]
+            }
+        },
+        {
+            "name": "submit_inquiry",
+            "description": "Submit an inquiry with contact info and message.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "email": {"type": "string"},
+                    "message": {"type": "string"}
+                },
+                "required": ["name", "email", "message"]
+            }
+        },
+        {
+            "name": "schedule_site_visit",
+            "description": "Schedule a site visit to a property.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "property_id": {"type": "string"},
+                    "date": {"type": "string", "format": "date"}
+                },
+                "required": ["property_id", "date"]
+            }
+        }
+
 def get_functions():
     return function_schema
 
@@ -71,7 +107,29 @@ def handle_tool_call(func: str, args: dict):
     if func == "list_properties":
         return {"properties": properties}
 
-    elif func == "search_properties":
+    elif func == "search_properties":    elif func == "reserve_property":
+        prop_id = args.get("property_id")
+        for p in properties:
+            if p["id"] == prop_id:
+                p["status"] = "reserved"
+                return {"status": "reserved", "property": p}
+        return {"error": "Property not found"}
+
+    elif func == "submit_inquiry":
+        name = args.get("name")
+        email = args.get("email")
+        message = args.get("message")
+        return {"received": True, "name": name, "email": email, "message": message}
+
+    elif func == "schedule_site_visit":
+        property_id = args.get("property_id")
+        date = args.get("date")
+        return {
+            "visit_confirmed": True,
+            "property_id": property_id,
+            "visit_date": date
+        }
+
         loc = args.get("location", "").lower()
         max_price = args.get("max_price", float("inf"))
         ptype = args.get("property_type", "").lower()
@@ -85,3 +143,7 @@ def handle_tool_call(func: str, args: dict):
         return {"matches": results}
 
     raise ValueError("Unsupported function")
+    def handle_tool_call(func: str, args: dict):
+        Add reserve, inquiry, and site visit MCP tools
+
+
